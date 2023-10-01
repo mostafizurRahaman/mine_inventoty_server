@@ -1,3 +1,4 @@
+const { query } = require("express");
 const {
    getProductService,
    createProductService,
@@ -9,7 +10,31 @@ const {
 
 module.exports.getProducts = async (req, res, next) => {
    try {
-      const products = await getProductService();
+      let filter = { ...req.query };
+      const queryObject = {};
+      console.log(filter);
+      const excludedFields = ["sort", "limit", "page", "field"];
+      excludedFields.forEach((field) => delete filter[field]);
+      filter = JSON.parse(
+         JSON.stringify(filter).replace(
+            /\b(gt|lt|gte|lte|eq|ne)\b/g,
+            (match) => `$${match}`
+         )
+      );
+      if (req.query.sort) {
+         const sortBy = req.query.sort.split(",").join(" ");
+         queryObject.sortBy = sortBy;
+      }
+      if (req.query.field) {
+         const field = req.query.field.split(",").join(" ");
+         queryObject.field = field;
+      }
+      if (req.query.page) {
+         let { page = 1, limit = 5 } = req.query;
+         queryObject.skip = (page - 1) * parseInt(limit);
+         queryObject.limit = limit * 1;
+      }
+      const products = await getProductService(filter, queryObject);
       res.status(200).send({
          status: "success",
          message: "products found successfully",

@@ -1,9 +1,15 @@
 const Brand = require("../models/brand.model");
 const Product = require("../models/product.model");
 
-module.exports.getProductService = async () => {
-   const products = await Product.find({});
-   return products;
+module.exports.getProductService = async (filter, queryObject) => {
+   console.log(queryObject);
+   const products = await Product.find(filter)
+      .sort(queryObject.sortBy)
+      .select(queryObject.field)
+      .skip(queryObject.skip)
+      .limit(queryObject.limit);
+   const total = await Product.countDocuments(filter);
+   return { total, products };
 };
 
 module.exports.createProductService = async (data) => {

@@ -21,6 +21,11 @@ const productSchema = mongoose.Schema(
             message: `{VALUE} shouldn't unit, unit will be kg/litre/pcs/bag`,
          },
       },
+      price: {
+         type: Number,
+         required: true,
+         min: [0, "Price shouldn't be negative"],
+      },
       imageURLs: [
          {
             type: String,
